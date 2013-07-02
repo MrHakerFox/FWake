@@ -38,6 +38,7 @@ FRetVals::value FWakeMaster::exchange( uint8_t TxAddr, uint8_t TxCmd, uint8_t Tx
 
 	if( result != FRetVals::OK )
 	{
+		purge();
 		return result;
 	}
 

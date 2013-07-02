@@ -39,7 +39,7 @@ const uint8_t NOP = 0;
 // Error code
 const uint8_t ERR = 1;
 // Request for transmitted packet
-const uint8_t ECHO = 2;
+const uint8_t ECH = 2;
 // Request for information about device
 const uint8_t INFO = 3;
 // My extension: device transmit this to master in case of unknown command
