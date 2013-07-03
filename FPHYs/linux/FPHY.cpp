@@ -26,7 +26,7 @@ struct termios options;
  */
 FRetVals::value wakePHYOpen( char* portname )
 {
-	fd = open( portname, O_RDWR | O_NDELAY | O_NOCTTY );
+	fd = open( portname, O_RDWR | O_NDELAY | O_NOCTTY | O_NONBLOCK );
 
 	if( fd == -1 )
 	{
@@ -34,14 +34,13 @@ FRetVals::value wakePHYOpen( char* portname )
 		return FRetVals::WakePHYGeneralError;
 	}
 
-	//fcntl( fd, F_SETFL, FNDELAY);
+	fcntl( fd, F_SETFL, FNDELAY);
 
 	tcgetattr( fd, &options );
 
 	switch( F_WAKE_SETTINGS::BAUDRATE )
 	{
 	case 38400:
-		printf( "\r\nBaudrate 38400" );
 		cfsetispeed( &options, B38400 );
 		cfsetospeed( &options, B38400 );
 		break;
@@ -56,17 +55,20 @@ FRetVals::value wakePHYOpen( char* portname )
 	}
 
 	options.c_cc[ VMIN ] = 1;
-	options.c_cc[ VTIME ] = 100;
+	options.c_cc[ VTIME ] = 10;
 
 	options.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP
-	                | INLCR | IGNCR | ICRNL | IXON);
+	                | INLCR | IGNCR | ICRNL | IXON | IXOFF | IXANY);
 	options.c_oflag &= ~OPOST;
-	options.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+	options.c_lflag &= ~(ECHO | ECHONL | ECHOE | ICANON | ISIG | IEXTEN);
 	options.c_cflag &= ~(CSIZE | PARENB);
+	options.c_cflag &= ~CRTSCTS;
 	options.c_cflag |= CS8;
 
 	if( tcsetattr( fd, TCSANOW, &options ) == -1 )
 		return FRetVals::WakePHYGeneralError;
+
+	wakePHYPurge();
 
 	return FRetVals::OK;
 }
@@ -86,6 +88,11 @@ FRetVals::value wakePHYOpen( char* portname )
 bool  wakePHYSend( uint8_t* src, uint8_t size )
 {
 	int wordsWritten = write( fd, src, size );
+	if( tcdrain( fd ) == -1 )
+	{
+		printf( "\r\nSend tcdrain..." );
+		return false;
+	}
 
 	if( wordsWritten == -1 )
 	{
@@ -93,9 +100,9 @@ bool  wakePHYSend( uint8_t* src, uint8_t size )
 		return false;
 	}
 
-	printf( "\r\nSend2, size: %i, wordsWritten: %i\r\nData: ", size, wordsWritten );
-	for( int i = 0; i < size; i++ )
-		printf( "0x%02X ", *src++ );
+	//printf( "\r\nSend2, size: %i, wordsWritten: %i\r\nData: ", size, wordsWritten );
+	//for( int i = 0; i < size; i++ )
+	//	printf( "0x%02X ", *src++ );
 	return wordsWritten == size;
 }
 
@@ -114,8 +121,8 @@ bool  wakePHYSend( uint8_t* src, uint8_t size )
 bool  wakePHYGet( uint8_t* dst, uint8_t* size )
 {
 	uint8_t byte;
-
-	printf( "\r\nDEBUG FUNC wakePHYGet 1" );
+	usleep( 10 );
+	//printf( "\r\nDEBUG FUNC wakePHYGet 1" );
 	int wordsRead = read( fd, &byte, 1 );
 	if( wordsRead != 1 )
 	{
@@ -129,9 +136,9 @@ bool  wakePHYGet( uint8_t* dst, uint8_t* size )
 		return false;
 	}
 
-	printf( "\r\nDEBUG FUNC wakePHYGet 4" );
+	//printf( "\r\nDEBUG FUNC wakePHYGet 4" );
 	wordsRead = read( fd, dst, WAKE_BUFFER_TOTAL_SIZE );
-	printf( "\r\nDEBUG FUNC wakePHYGet 5" );
+	//printf( "\r\nDEBUG FUNC wakePHYGet 5" );
 
 	if( wordsRead == -1 )
 	{
@@ -139,7 +146,7 @@ bool  wakePHYGet( uint8_t* dst, uint8_t* size )
 		return false;
 	}
 
-	printf( "\r\nDEBUG FUNC wakePHYGet 7, size %i", wordsRead );
+	//printf( "\r\nDEBUG FUNC wakePHYGet 7, size %i", wordsRead );
 
 	*size = wordsRead;
 
