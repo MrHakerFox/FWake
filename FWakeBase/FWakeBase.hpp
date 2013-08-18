@@ -83,12 +83,13 @@ public:
 	FRetVals::value getPacket( uint8_t* RxAddr, uint8_t* RxCmd, uint8_t* RxNumOfBytes, uint8_t MatchAddr = 0 );
 	FRetVals::value purge() const;
 	
-	FRetVals::value setData( uint8_t data, uint8_t ind );
+	FRetVals::value setDataInd( uint8_t data, uint8_t ind );
+	//FRetVals::value setData( uint8_t data, uint8_t ind );
 	FRetVals::value setData( uint8_t *src, uint8_t size = F_WAKE_SETTINGS::BUFF_SIZE );
 
 	FRetVals::value getData( uint8_t* data, uint8_t ind ) const;
 	FRetVals::value getDataBuff( uint8_t* dst, uint8_t size = F_WAKE_SETTINGS::BUFF_SIZE );
-	uint8_t			getData( uint8_t ind ) const;
+	uint8_t			getData( uint8_t ind = 0 ) const;
 
 	bool			isAddressValid( uint8_t addr ) const;
 

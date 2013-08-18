@@ -191,7 +191,7 @@ FRetVals::value FWakeBase::purge() const
 
 
 
-FRetVals::value FWakeBase::setData( uint8_t data, uint8_t ind )
+FRetVals::value FWakeBase::setDataInd( uint8_t data, uint8_t ind )
 {
 	if( ind > ( F_WAKE_SETTINGS::BUFF_SIZE - 1 ) )
 		return FRetVals::WakeOutOfRange;
@@ -200,6 +200,18 @@ FRetVals::value FWakeBase::setData( uint8_t data, uint8_t ind )
 
 	return FRetVals::OK;
 }
+
+
+/*
+FRetVals::value FWakeBase::setData( uint8_t data, uint8_t ind )
+{
+	if( ind > ( F_WAKE_SETTINGS::BUFF_SIZE - 1 ) )
+		return FRetVals::WakeOutOfRange;
+
+	txBuff[ ind ] = data;
+
+	return FRetVals::OK;
+}*/
 
 
 
